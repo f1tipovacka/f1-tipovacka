@@ -1,0 +1,39 @@
+<svg width="800" height="300" viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .stroke {
+      fill: none;
+      stroke: white;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .text {
+      fill: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 600;
+      font-size: 42px;
+      letter-spacing: -0.5px;
+    }
+  </style>
+
+  <!-- FRONT WING -->
+  <path class="stroke" d="M100 200 Q400 160 700 200" />
+  <path class="stroke" d="M120 215 Q400 180 680 215" />
+  <path class="stroke" d="M140 230 Q400 200 660 230" />
+
+  <!-- CENTER NOSE -->
+  <path class="stroke" d="M390 80 L410 80 L420 200 L380 200 Z" />
+
+  <!-- SIDE STRUCTURE -->
+  <path class="stroke" d="M250 140 L350 180" />
+  <path class="stroke" d="M550 140 L450 180" />
+
+  <!-- WHEELS -->
+  <circle class="stroke" cx="220" cy="150" r="50" />
+  <circle class="stroke" cx="580" cy="150" r="50" />
+
+  <!-- TEXT -->
+  <text x="400" y="210" text-anchor="middle" class="text">
+    F1 Tipovačka
+  </text>
+</svg>
