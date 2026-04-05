@@ -901,7 +901,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
   }
 
   async function sendTip(qid, answer) {
-    if (isLocked && !adminMode) return;
+    if ((isLocked || race.season_locked) && !adminMode) return;
 
     await supabase.from("tips").upsert(
       {
@@ -951,6 +951,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
 
   async function addQuestion() {
     if (!newQuestion.trim()) return;
+    if (race.season_locked && !adminMode) return;
 
     await supabase.from("questions").insert([
       {
@@ -975,6 +976,36 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       </button>
 
       <h1 className="text-xl font-bold mb-2">{race.name}</h1>
+
+      {/* SEASON LOCK BANNER & TOGGLE */}
+      {adminMode && race.type === "season" && (
+        <div className="mb-4 p-3 rounded-xl bg-yellow-900/40 border border-yellow-700 flex justify-between items-center">
+          <div className="text-sm">Sezónní tipy</div>
+          <button
+            onClick={async () => {
+              await supabase
+                .from("races")
+                .update({ season_locked: !race.season_locked })
+                .eq("id", race.id);
+              load();
+            }}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              race.season_locked
+                ? "bg-red-600 hover:bg-red-500"
+                : "bg-green-600 hover:bg-green-500"
+            }`}
+          >
+            {race.season_locked ? "🔒 Zamčeno" : "🔓 Odemčeno"}
+          </button>
+        </div>
+      )}
+
+      {race.season_locked && !adminMode && (
+        <div className="mb-4 text-red-400 text-sm">
+          🔒 Sezónní tipy jsou uzamčeny
+        </div>
+      )}
+
       {timeLeft && (
         <div className="mb-2 text-sm text-yellow-400">
           ⏳ Tipování končí za {timeLeft}
@@ -1020,12 +1051,17 @@ function RaceDetail({ race, user, goBack, adminMode }) {
             </select>
           )}
           <button
-            disabled={!isSeason && myQuestions.length >= 3}
+            disabled={
+              (!isSeason && myQuestions.length >= 3) ||
+              (race.season_locked && !adminMode)
+            }
             onClick={addQuestion}
             className={`px-4 py-2 rounded-lg ${
               !isSeason && myQuestions.length >= 3
                 ? "bg-zinc-700"
-                : "bg-red-600/90 hover:bg-red-500/90 border border-red-500/30 transition active:scale-95"
+                : (race.season_locked && !adminMode)
+                  ? "bg-zinc-700 opacity-40 pointer-events-none"
+                  : "bg-red-600/90 hover:bg-red-500/90 border border-red-500/30 transition active:scale-95"
             }`}
           >
             ➕
@@ -1123,24 +1159,24 @@ function RaceDetail({ race, user, goBack, adminMode }) {
               {q.type === "boolean" ? (
                 <div className="flex gap-2 mb-3">
                   <button
-                    disabled={isLocked && !adminMode}
+                    disabled={(isLocked || race.season_locked) && !adminMode}
                     onClick={() => sendTip(q.id, "ANO")}
                     className={`px-3 py-1 rounded-lg border transition active:scale-95 ${
                       list.find(t => t.player_id === user.id)?.answer === "ANO"
                         ? "bg-white text-black border-white"
                         : "bg-zinc-800/80 hover:bg-zinc-700/80 border-zinc-700/70"
-                    } ${isLocked && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
+                    } ${(isLocked || race.season_locked) && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
                   >
                     ANO
                   </button>
                   <button
-                    disabled={isLocked && !adminMode}
+                    disabled={(isLocked || race.season_locked) && !adminMode}
                     onClick={() => sendTip(q.id, "NE")}
                     className={`px-3 py-1 rounded-lg border transition active:scale-95 ${
                       list.find(t => t.player_id === user.id)?.answer === "NE"
                         ? "bg-white text-black border-white"
                         : "bg-zinc-800/80 hover:bg-zinc-700/80 border-zinc-700/70"
-                    } ${isLocked && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
+                    } ${(isLocked || race.season_locked) && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
                   >
                     NE
                   </button>
@@ -1150,8 +1186,8 @@ function RaceDetail({ race, user, goBack, adminMode }) {
                   value={list.find(t => t.player_id === user.id)?.answer || ""}
                   className="px-3 py-1 rounded-lg bg-zinc-900/70 border border-zinc-700/70 text-white backdrop-blur focus:outline-none focus:ring-1 focus:ring-white/40"
                   onChange={(e) => sendTip(q.id, e.target.value)}
-                  disabled={isLocked && !adminMode}
-                  style={isLocked && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
+                  disabled={(isLocked || race.season_locked) && !adminMode}
+                  style={(isLocked || race.season_locked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
                 >
                   <option value="">Vyber jezdce</option>
                   {drivers.map(d => (
@@ -1163,8 +1199,8 @@ function RaceDetail({ race, user, goBack, adminMode }) {
                   value={list.find(t => t.player_id === user.id)?.answer || ""}
                   className="px-3 py-1 rounded-lg bg-zinc-900/70 border border-zinc-700/70 text-white backdrop-blur focus:outline-none focus:ring-1 focus:ring-white/40"
                   onChange={(e) => sendTip(q.id, e.target.value)}
-                  disabled={isLocked && !adminMode}
-                  style={isLocked && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
+                  disabled={(isLocked || race.season_locked) && !adminMode}
+                  style={(isLocked || race.season_locked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
                 >
                   <option value="">Vyber tým</option>
                   {teams.map(t => (
