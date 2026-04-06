@@ -837,36 +837,36 @@ function RaceDetail({ race, user, goBack, adminMode }) {
     : false;
   const isSeason = race.type === "season";
 
-  useEffect(() => {
-    if (!race.lock_time) return;
+    useEffect(() => {
+      if (!race.lock_time) return;
 
-    const interval = setInterval(() => {
-      const diff = new Date(race.lock_time).getTime() - new Date().getTime();
+      const interval = setInterval(() => {
+        const diff = new Date(race.lock_time).getTime() - new Date().getTime();
 
-      if (diff <= 0) {
-        setTimeLeft(null);
-        clearInterval(interval);
-      } else {
-        const totalHours = Math.floor(diff / 1000 / 60 / 60);
-        const days = Math.floor(totalHours / 24);
-        const hours = totalHours % 24;
-        const m = Math.floor((diff / 1000 / 60) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-
-        if (days > 0) {
-          setTimeLeft(
-            `${days}d ${hours.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
-          );
+        if (diff <= 0) {
+          setTimeLeft(null);
+          clearInterval(interval);
         } else {
-          setTimeLeft(
-            `${hours.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
-          );
-        }
-      }
-    }, 1000);
+          const totalHours = Math.floor(diff / 1000 / 60 / 60);
+          const days = Math.floor(totalHours / 24);
+          const hours = totalHours % 24;
+          const m = Math.floor((diff / 1000 / 60) % 60);
+          const s = Math.floor((diff / 1000) % 60);
 
-    return () => clearInterval(interval);
-  }, [race.lock_time]);
+          if (days > 0) {
+            setTimeLeft(
+              `${days}d ${hours}h ${m}m ${s}s`
+            );
+          } else {
+            setTimeLeft(
+              `${hours}h ${m}m ${s}s`
+            );
+          }
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }, [race.lock_time]);
 
   useEffect(() => {
     load();
