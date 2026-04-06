@@ -916,11 +916,15 @@ function RaceDetail({ race, user, goBack, adminMode }) {
   }, [race.id]);
 
   async function load() {
-    const { data: q } = await supabase
+    console.log("RACE ID:", race.id, typeof race.id);
+
+    const { data: q, error: qError } = await supabase
       .from("questions")
       .select("*")
-      .eq("race_id", race.id)
+      .eq("race_id", String(race.id))
       .order("created_at", { ascending: true });
+
+    console.log("QUESTIONS:", q, "ERROR:", qError);
 
     const { data: t } = await supabase.from("tips").select("*");
     const { data: p } = await supabase.from("players").select("*");
