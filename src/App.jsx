@@ -922,7 +922,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       .from("questions")
       .select("*")
       .eq("race_id", String(race.id))
-      .order("created_at", { ascending: true });
+      .order("id", { ascending: true });
 
     console.log("QUESTIONS:", q, "ERROR:", qError);
 
