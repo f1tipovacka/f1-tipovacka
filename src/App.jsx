@@ -533,8 +533,8 @@ function Races({ onSelect, adminMode }) {
       {
         name: newRace.trim(),
         order_index: nextOrder,
-        lock_time: lockTime ? new Date(new Date(lockTime).getTime() - new Date(lockTime).getTimezoneOffset() * 60000).toISOString() : null,
-        end_time: endTime ? new Date(new Date(endTime).getTime() - new Date(endTime).getTimezoneOffset() * 60000).toISOString() : null
+        lock_time: lockTime ? new Date(lockTime).toISOString() : null,
+        end_time: endTime ? new Date(endTime).toISOString() : null
       },
     ]);
 
@@ -787,8 +787,8 @@ function Races({ onSelect, adminMode }) {
                     .from("races")
                     .update({
                       name: editingRace.name,
-                      lock_time: editingRace.lock_time ? new Date(new Date(editingRace.lock_time).getTime() - new Date(editingRace.lock_time).getTimezoneOffset() * 60000).toISOString() : null,
-                      end_time: editingRace.end_time ? new Date(new Date(editingRace.end_time).getTime() - new Date(editingRace.end_time).getTimezoneOffset() * 60000).toISOString() : null
+                      lock_time: editingRace.lock_time ? new Date(editingRace.lock_time).toISOString() : null,
+                      end_time: editingRace.end_time ? new Date(editingRace.end_time).toISOString() : null
                     })
                     .eq("id", editingRace.id);
 
