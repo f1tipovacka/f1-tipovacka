@@ -90,6 +90,21 @@ const styles = `
   z-index: 9999;
   animation: glassFlash 0.5s ease-out;
 }
+@keyframes liveDot {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-liveDot {
+  animation: liveDot 1s infinite;
+}
+@keyframes underlineSlide {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+.animate-underlineSlide {
+  animation: underlineSlide 0.6s ease-out forwards;
+}
 `;
 
 export default function App() {
@@ -717,18 +732,18 @@ function Races({ onSelect, adminMode }) {
               <div className="flex gap-2">
                 <input
                   type="date"
-                  value={editingRace.lock_time?.split("T")[0] || ""}
+                  value={editingRace.lock_time ? editingRace.lock_time.slice(0,10) : ""}
                   onChange={(e) => {
-                    const time = editingRace.lock_time?.split("T")[1] || "00:00";
+                    const time = editingRace.lock_time ? editingRace.lock_time.slice(11,16) : "00:00";
                     setEditingRace({ ...editingRace, lock_time: `${e.target.value}T${time}` });
                   }}
                   className="flex-1 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
                 />
                 <input
                   type="time"
-                  value={editingRace.lock_time?.split("T")[1] || ""}
+                  value={editingRace.lock_time ? editingRace.lock_time.slice(11,16) : ""}
                   onChange={(e) => {
-                    const date = editingRace.lock_time?.split("T")[0] || "";
+                    const date = editingRace.lock_time ? editingRace.lock_time.slice(0,10) : "";
                     setEditingRace({ ...editingRace, lock_time: `${date}T${e.target.value}` });
                   }}
                   className="w-32 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
@@ -740,18 +755,18 @@ function Races({ onSelect, adminMode }) {
               <div className="flex gap-2">
                 <input
                   type="date"
-                  value={editingRace.end_time?.split("T")[0] || ""}
+                  value={editingRace.end_time ? editingRace.end_time.slice(0,10) : ""}
                   onChange={(e) => {
-                    const time = editingRace.end_time?.split("T")[1] || "00:00";
+                    const time = editingRace.end_time ? editingRace.end_time.slice(11,16) : "00:00";
                     setEditingRace({ ...editingRace, end_time: `${e.target.value}T${time}` });
                   }}
                   className="flex-1 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
                 />
                 <input
                   type="time"
-                  value={editingRace.end_time?.split("T")[1] || ""}
+                  value={editingRace.end_time ? editingRace.end_time.slice(11,16) : ""}
                   onChange={(e) => {
-                    const date = editingRace.end_time?.split("T")[0] || "";
+                    const date = editingRace.end_time ? editingRace.end_time.slice(0,10) : "";
                     setEditingRace({ ...editingRace, end_time: `${date}T${e.target.value}` });
                   }}
                   className="w-32 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
@@ -991,11 +1006,19 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       </button>
 
       {race.lock_time && race.end_time && new Date() >= new Date(race.lock_time) && new Date() <= new Date(race.end_time) && (
-        <div className="mb-3 w-full h-1 bg-red-600 animate-pulse rounded-full"></div>
+        <div className="mb-3 w-full h-1 bg-gradient-to-r from-red-700 via-red-500 to-red-700 animate-pulse rounded-full shadow-[0_0_12px_rgba(239,68,68,0.6)]"></div>
       )}
-      <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-widest uppercase text-white relative">
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-widest uppercase text-white relative flex items-center gap-3">
         {race.name}
-        <div className="absolute left-0 bottom-[-6px] h-[3px] w-16 bg-red-500 rounded"></div>
+
+        {race.lock_time && race.end_time && new Date() >= new Date(race.lock_time) && new Date() <= new Date(race.end_time) && (
+          <span className="flex items-center gap-1 text-red-500 text-sm font-bold">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-liveDot"></span>
+            LIVE
+          </span>
+        )}
+
+        <div className="absolute left-0 bottom-[-6px] h-[3px] w-32 md:w-48 bg-red-500 rounded animate-underlineSlide"></div>
       </h1>
 
       {/* SEASON LOCK BANNER & TOGGLE */}
@@ -1032,7 +1055,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         <div
           className={`mb-2 text-sm font-semibold ${
             isLast10s
-              ? "text-red-500 animate-pulseDanger"
+              ? "text-red-500 animate-pulseDanger drop-shadow-[0_0_10px_rgba(239,68,68,0.7)]"
               : isLastHour
                 ? "text-red-500 animate-pulse"
                 : "text-yellow-400"
