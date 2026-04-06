@@ -335,13 +335,13 @@ function TopBar({ user, logout, setView, view, adminMode, setAdminMode, haptic, 
         {isAdmin && (
           <button
             onClick={() => setAdminMode(!adminMode)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition active:scale-95 border ${
+            className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition active:scale-95 border ${
               adminMode
                 ? "bg-white text-black border-white"
                 : "bg-zinc-900/70 text-white border-zinc-700"
             }`}
           >
-            ADMIN
+            🛠
           </button>
         )}
 
@@ -847,13 +847,21 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         setTimeLeft(null);
         clearInterval(interval);
       } else {
-        const h = Math.floor(diff / 1000 / 60 / 60);
+        const totalHours = Math.floor(diff / 1000 / 60 / 60);
+        const days = Math.floor(totalHours / 24);
+        const hours = totalHours % 24;
         const m = Math.floor((diff / 1000 / 60) % 60);
         const s = Math.floor((diff / 1000) % 60);
 
-        setTimeLeft(
-          `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
-        );
+        if (days > 0) {
+          setTimeLeft(
+            `${days}d ${hours.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
+          );
+        } else {
+          setTimeLeft(
+            `${hours.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`
+          );
+        }
       }
     }, 1000);
 
@@ -1010,18 +1018,6 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         <div className="mb-2 text-sm text-yellow-400">
           ⏳ Tipování končí za {timeLeft}
         </div>
-      )}
-      {adminMode && (
-        <input
-          type="datetime-local"
-          className="mb-3 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700/70 text-white focus:outline-none focus:ring-1 focus:ring-white/40"
-          onChange={async (e) => {
-            await supabase
-              .from("races")
-              .update({ lock_time: e.target.value })
-              .eq("id", race.id);
-          }}
-        />
       )}
 
       {isLocked && (
