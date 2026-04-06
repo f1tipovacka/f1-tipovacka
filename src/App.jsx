@@ -913,7 +913,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [race.id]);
 
   async function load() {
     const { data: q } = await supabase
