@@ -732,18 +732,22 @@ function Races({ onSelect, adminMode }) {
               <div className="flex gap-2">
                 <input
                   type="date"
-                  value={editingRace.lock_time ? editingRace.lock_time.slice(0,10) : ""}
+                  value={editingRace.lock_time ? new Date(editingRace.lock_time).toISOString().slice(0,10) : ""}
                   onChange={(e) => {
-                    const time = editingRace.lock_time ? editingRace.lock_time.slice(11,16) : "00:00";
+                    const time = editingRace.lock_time
+                      ? new Date(editingRace.lock_time).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
+                      : "00:00";
                     setEditingRace({ ...editingRace, lock_time: `${e.target.value}T${time}` });
                   }}
                   className="flex-1 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
                 />
                 <input
                   type="time"
-                  value={editingRace.lock_time ? editingRace.lock_time.slice(11,16) : ""}
+                  value={editingRace.lock_time ? new Date(editingRace.lock_time).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }) : ""}
                   onChange={(e) => {
-                    const date = editingRace.lock_time ? editingRace.lock_time.slice(0,10) : "";
+                    const date = editingRace.lock_time
+                      ? new Date(editingRace.lock_time).toISOString().slice(0,10)
+                      : "";
                     setEditingRace({ ...editingRace, lock_time: `${date}T${e.target.value}` });
                   }}
                   className="w-32 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
@@ -755,18 +759,22 @@ function Races({ onSelect, adminMode }) {
               <div className="flex gap-2">
                 <input
                   type="date"
-                  value={editingRace.end_time ? editingRace.end_time.slice(0,10) : ""}
+                  value={editingRace.end_time ? new Date(editingRace.end_time).toISOString().slice(0,10) : ""}
                   onChange={(e) => {
-                    const time = editingRace.end_time ? editingRace.end_time.slice(11,16) : "00:00";
+                    const time = editingRace.end_time
+                      ? new Date(editingRace.end_time).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
+                      : "00:00";
                     setEditingRace({ ...editingRace, end_time: `${e.target.value}T${time}` });
                   }}
                   className="flex-1 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
                 />
                 <input
                   type="time"
-                  value={editingRace.end_time ? editingRace.end_time.slice(11,16) : ""}
+                  value={editingRace.end_time ? new Date(editingRace.end_time).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }) : ""}
                   onChange={(e) => {
-                    const date = editingRace.end_time ? editingRace.end_time.slice(0,10) : "";
+                    const date = editingRace.end_time
+                      ? new Date(editingRace.end_time).toISOString().slice(0,10)
+                      : "";
                     setEditingRace({ ...editingRace, end_time: `${date}T${e.target.value}` });
                   }}
                   className="w-32 px-3 py-2 rounded bg-zinc-900/70 border border-zinc-700 text-white"
