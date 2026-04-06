@@ -825,6 +825,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
   const [teams, setTeams] = useState([]);
   const [toast, setToast] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [isLastHour, setIsLastHour] = useState(false);
   // --- Admin question controls ---
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -845,8 +846,10 @@ function RaceDetail({ race, user, goBack, adminMode }) {
 
         if (diff <= 0) {
           setTimeLeft(null);
+          setIsLastHour(false);
           clearInterval(interval);
         } else {
+          setIsLastHour(diff <= 3600000);
           const totalHours = Math.floor(diff / 1000 / 60 / 60);
           const days = Math.floor(totalHours / 24);
           const hours = totalHours % 24;
@@ -983,7 +986,9 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         ← zpět
       </button>
 
-      <h1 className="text-xl font-bold mb-2">{race.name}</h1>
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 drop-shadow-[0_0_12px_rgba(255,0,0,0.4)]">
+        {race.name}
+      </h1>
 
       {/* SEASON LOCK BANNER & TOGGLE */}
       {adminMode && race.type === "season" && (
@@ -1015,7 +1020,13 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       )}
 
       {timeLeft && (
-        <div className="mb-2 text-sm text-yellow-400">
+        <div
+          className={`mb-2 text-sm font-semibold ${
+            isLastHour
+              ? "text-red-500 animate-pulse"
+              : "text-yellow-400"
+          }`}
+        >
           ⏳ Tipování končí za {timeLeft}
         </div>
       )}
