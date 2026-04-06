@@ -826,6 +826,8 @@ function RaceDetail({ race, user, goBack, adminMode }) {
   const [toast, setToast] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [isLastHour, setIsLastHour] = useState(false);
+  const [isLast10s, setIsLast10s] = useState(false);
+  const [seasonLocked, setSeasonLocked] = useState(race.season_locked);
   // --- Admin question controls ---
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingText, setEditingText] = useState("");
@@ -847,9 +849,11 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         if (diff <= 0) {
           setTimeLeft(null);
           setIsLastHour(false);
+          setIsLast10s(false);
           clearInterval(interval);
         } else {
           setIsLastHour(diff <= 3600000);
+          setIsLast10s(diff <= 10000);
           const totalHours = Math.floor(diff / 1000 / 60 / 60);
           const days = Math.floor(totalHours / 24);
           const hours = totalHours % 24;
@@ -912,7 +916,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
   }
 
   async function sendTip(qid, answer) {
-    if ((isLocked || race.season_locked) && !adminMode) return;
+    if ((isLocked || seasonLocked) && !adminMode) return;
 
     await supabase.from("tips").upsert(
       {
@@ -962,7 +966,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
 
   async function addQuestion() {
     if (!newQuestion.trim()) return;
-    if (race.season_locked && !adminMode) return;
+    if (seasonLocked && !adminMode) return;
 
     await supabase.from("questions").insert([
       {
@@ -986,8 +990,12 @@ function RaceDetail({ race, user, goBack, adminMode }) {
         ← zpět
       </button>
 
-      <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-400 drop-shadow-[0_0_12px_rgba(255,0,0,0.4)]">
+      {race.lock_time && race.end_time && new Date() >= new Date(race.lock_time) && new Date() <= new Date(race.end_time) && (
+        <div className="mb-3 w-full h-1 bg-red-600 animate-pulse rounded-full"></div>
+      )}
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-2 tracking-widest uppercase text-white relative">
         {race.name}
+        <div className="absolute left-0 bottom-[-6px] h-[3px] w-16 bg-red-500 rounded"></div>
       </h1>
 
       {/* SEASON LOCK BANNER & TOGGLE */}
@@ -996,24 +1004,25 @@ function RaceDetail({ race, user, goBack, adminMode }) {
           <div className="text-sm">Sezónní tipy</div>
           <button
             onClick={async () => {
+              const newVal = !seasonLocked;
+              setSeasonLocked(newVal);
               await supabase
                 .from("races")
-                .update({ season_locked: !race.season_locked })
+                .update({ season_locked: newVal })
                 .eq("id", race.id);
-              load();
             }}
             className={`px-3 py-1 rounded-lg text-sm ${
-              race.season_locked
+              seasonLocked
                 ? "bg-red-600 hover:bg-red-500"
                 : "bg-green-600 hover:bg-green-500"
             }`}
           >
-            {race.season_locked ? "🔒 Zamčeno" : "🔓 Odemčeno"}
+            {seasonLocked ? "🔒 Zamčeno" : "🔓 Odemčeno"}
           </button>
         </div>
       )}
 
-      {race.season_locked && !adminMode && (
+      {seasonLocked && !adminMode && (
         <div className="mb-4 text-red-400 text-sm">
           🔒 Sezónní tipy jsou uzamčeny
         </div>
@@ -1022,9 +1031,11 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       {timeLeft && (
         <div
           className={`mb-2 text-sm font-semibold ${
-            isLastHour
-              ? "text-red-500 animate-pulse"
-              : "text-yellow-400"
+            isLast10s
+              ? "text-red-500 animate-pulseDanger"
+              : isLastHour
+                ? "text-red-500 animate-pulse"
+                : "text-yellow-400"
           }`}
         >
           ⏳ Tipování končí za {timeLeft}
@@ -1060,13 +1071,13 @@ function RaceDetail({ race, user, goBack, adminMode }) {
           <button
             disabled={
               (!isSeason && myQuestions.length >= 3) ||
-              (race.season_locked && !adminMode)
+              (seasonLocked && !adminMode)
             }
             onClick={addQuestion}
             className={`px-4 py-2 rounded-lg ${
               !isSeason && myQuestions.length >= 3
                 ? "bg-zinc-700"
-                : (race.season_locked && !adminMode)
+                : (seasonLocked && !adminMode)
                   ? "bg-zinc-700 opacity-40 pointer-events-none"
                   : "bg-red-600/90 hover:bg-red-500/90 border border-red-500/30 transition active:scale-95"
             }`}
@@ -1166,13 +1177,13 @@ function RaceDetail({ race, user, goBack, adminMode }) {
               {q.type === "boolean" ? (
                 <div className="flex gap-2 mb-3">
                   <button
-                    disabled={(isLocked || race.season_locked) && !adminMode}
+                    disabled={(isLocked || seasonLocked) && !adminMode}
                     onClick={() => sendTip(q.id, "ANO")}
                     className={`px-3 py-1 rounded-lg border transition active:scale-95 ${
                       list.find(t => t.player_id === user.id)?.answer === "ANO"
                         ? "bg-white text-black border-white"
                         : "bg-zinc-800/80 hover:bg-zinc-700/80 border-zinc-700/70"
-                    } ${(isLocked || race.season_locked) && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
+                    } ${(isLocked || seasonLocked) && !adminMode ? "opacity-40 pointer-events-none" : ""}`}
                   >
                     ANO
                   </button>
@@ -1193,8 +1204,8 @@ function RaceDetail({ race, user, goBack, adminMode }) {
                   value={list.find(t => t.player_id === user.id)?.answer || ""}
                   className="px-3 py-1 rounded-lg bg-zinc-900/70 border border-zinc-700/70 text-white backdrop-blur focus:outline-none focus:ring-1 focus:ring-white/40"
                   onChange={(e) => sendTip(q.id, e.target.value)}
-                  disabled={(isLocked || race.season_locked) && !adminMode}
-                  style={(isLocked || race.season_locked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
+                    disabled={(isLocked || seasonLocked) && !adminMode}
+                    style={(isLocked || seasonLocked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
                 >
                   <option value="">Vyber jezdce</option>
                   {drivers.map(d => (
@@ -1206,8 +1217,8 @@ function RaceDetail({ race, user, goBack, adminMode }) {
                   value={list.find(t => t.player_id === user.id)?.answer || ""}
                   className="px-3 py-1 rounded-lg bg-zinc-900/70 border border-zinc-700/70 text-white backdrop-blur focus:outline-none focus:ring-1 focus:ring-white/40"
                   onChange={(e) => sendTip(q.id, e.target.value)}
-                  disabled={(isLocked || race.season_locked) && !adminMode}
-                  style={(isLocked || race.season_locked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
+                    disabled={(isLocked || seasonLocked) && !adminMode}
+                    style={(isLocked || seasonLocked) && !adminMode ? { opacity: 0.4, pointerEvents: "none" } : {}}
                 >
                   <option value="">Vyber tým</option>
                   {teams.map(t => (
