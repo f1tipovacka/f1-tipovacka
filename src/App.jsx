@@ -920,7 +920,7 @@ function RaceDetail({ race, user, goBack, adminMode }) {
       .from("questions")
       .select("*")
       .eq("race_id", race.id)
-      .order("id");
+      .order("created_at", { ascending: true });
 
     const { data: t } = await supabase.from("tips").select("*");
     const { data: p } = await supabase.from("players").select("*");
